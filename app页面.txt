@@ -1,0 +1,192 @@
+<script>
+	export default {
+		data() {
+			return {
+				Temp: 0,
+				Humi: 0,
+				FAN: false,
+				SHI: false,
+				HOT: false,
+				COL: false,
+				out: 0,
+				sendsum: 0,
+				sendfan: 0,
+				sendshi: 0,
+				sendhot: 0,
+				sendcol: 0,
+			}
+		},
+		onShow() {
+			let that = this
+			this.GetDatapoints()
+			setInterval(function(){
+				that.GetDatapoints()				
+			},3000)
+		},
+		onLoad() {
+		},
+		methods: {
+			GetDatapoints:function(){
+				uni.request({
+				    url: 'http://api.heclouds.com/devices/1063643708/datapoints?', //仅为示例，并非真实接口地址。
+				    header: {
+				        'api-key':'Qxl2IZ82aKhot3QKab0nKEE0ddI=' //自定义请求头信息
+				    },
+					method:'GET',
+				    success: (res) => {
+						this.Temp = res.data.data.datastreams[1].datapoints[0].value;
+						this.Humi = res.data.data.datastreams[0].datapoints[0].value;
+						this.out = res.data.data.datastreams[2].datapoints[0].value;
+						this.out = (this.out);						
+						this.FAN = Boolean(parseInt(this.out%2));
+						this.SHI = Boolean((parseInt(this.out/2))%2);
+						this.HOT = Boolean((parseInt(this.out/4))%2);
+						this.COL = Boolean(parseInt(this.out/8));
+				    }
+				});
+			},
+			onLedSwitch(event){
+				console.log(event.detail.value);
+				//console.log(res);
+				let sw1 = event.detail.value;
+				if(sw1){
+					this.sendfan = 1;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("FAN on!");
+					    }
+					});
+				}
+				else{
+					this.sendfan = 0,
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("FAN off!");
+					    }
+					});
+				}
+			},
+			onSHISwitch(event){
+				console.log(event.detail.value);
+				//console.log(res.data.data.datastreams[0].datapoints[0].value);
+				let sw2 = event.detail.value;
+				if(sw2){
+					this.sendshi = 1;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("SHI on!");
+					    }
+					});
+				}
+				else{
+					this.sendshi = 0;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("SHI off!");
+					    }
+					});
+				}
+			},
+			
+			onHOTSwitch(event){
+				console.log(event.detail.value);
+				//console.log(res.data.data.datastreams[0].datapoints[0].value);
+				let sw3 = event.detail.value;
+				if(sw3){
+					this.sendhot = 1;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("HOT on!");
+					    }
+					});
+				}
+				else{
+					this.sendhot = 0;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("HOT off!");
+					    }
+					});
+				}
+			},
+			
+			onCOLSwitch(event){
+				console.log(event.detail.value);
+				//console.log(res.data.data.datastreams[0].datapoints[0].value);
+				let sw4 = event.detail.value;
+				if(sw4){
+					this.sendcol = 1;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("COL on!");
+					    }
+					});
+				}
+				else{
+					this.sendcol = 0;
+					this.sendsum = this.sendfan + 2*this.sendshi + 4*this.sendhot + 8*this.sendcol;
+					uni.request({
+					    url: 'http://api.heclouds.com/mqtt?topic=LED_SW', //仅为示例，并非真实接口地址。
+					    header: {
+					        'api-key':'=PE2rSiPSkGapmy0cwU=0OYUIVs=' //Master-key
+					    },
+						method:'POST',
+						data: {"LED":this.sendsum},
+					    success: (res) => {
+					        console.log("COL off!");
+					    }
+					});
+				}
+			}
+		}
+	}
+</script>
